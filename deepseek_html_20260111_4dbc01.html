@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Horarios - LATAM Provider S.A.C.</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #2d3748;
+            --accent-color: #3182ce;
+            --success-color: #38a169;
+            --warning-color: #d69e2e;
+            --danger-color: #e53e3e;
+            --light-color: #f7fafc;
+            --dark-color: #2d3748;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #2d3748;
+            --secondary-color: #4a5568;
+            --light-color: #2d3748;
+            --dark-color: #f7fafc;
+            --border-color: #4a5568;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "header sidebar"
+                "main sidebar"
+                "footer footer";
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            grid-area: header;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-circle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-text {
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .company-info h1 {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .company-info p {
+            color: var(--secondary-color);
+            font-size: 14px;
+        }
+
+        .btn-theme {
+            background: var(--light-color);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--dark-color);
+            transition: all 0.3s;
+        }
+
+        .btn-theme:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            grid-area: main;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .step-number {
+            background-color: var(--accent-color);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .step-header h2 {
+            color: var(--primary-color);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-box {
+            background-color: #f0f9ff;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+        }
+
+        .info-box.warning {
+            background-color: #fffaf0;
+            border-left-color: var(--warning-color);
+        }
+
+        .info-box i {
+            margin-right: 10px;
+        }
+
+        /* Week Schedule */
+        .week-schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .day-card {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .day-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent-color);
+        }
+
+        .day-card.selected {
+            background-color: #e6fffa;
+            border-color: var(--success-color);
+        }
+
+        .day-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .day-date {
+            color: var(--secondary-color);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .day-schedule {
+            background-color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .no-schedule {
+            color: var(--secondary-color);
+            font-style: italic;
+        }
+
+        /* Selected Summary */
+        .selected-summary {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+
+        .summary-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        /* Confirmation Card */
+        .confirmation-card {
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .confirmation-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+        }
+
+        .confirmation-body {
+            padding: 30px;
+        }
+
+        .final-summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+        }
+
+        .sidebar-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .reference-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .reference-table th, .reference-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .reference-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .reference-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .row-day {
+            background-color: #f0f9ff;
+        }
+
+        .row-evening {
+            background-color: #fffaf0;
+        }
+
+        .row-night {
+            background-color: #faf5ff;
+        }
+
+        .legend {
+            margin-top: 20px;
+        }
+
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            margin-right: 10px;
+        }
+
+        .legend-day {
+            background-color: #bee3f8;
+        }
+
+        .legend-evening {
+            background-color: #fbd38d;
+        }
+
+        .legend-night {
+            background-color: #b794f4;
+        }
+
+        /* Footer */
+        .footer {
+            grid-area: footer;
+            text-align: center;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-size: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Buttons */
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn-primary, .btn-secondary, .btn-success, .btn-danger {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2c5282;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #2f855a;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c53030;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Schedule Options */
+        .schedule-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .schedule-option {
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .schedule-option:hover {
+            border-color: var(--accent-color);
+        }
+
+        .schedule-option.selected {
+            background-color: #e6fffa;
+            border-color: var(--success-color);
+        }
+
+        .schedule-code {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .schedule-time {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .schedule-break {
+            font-size: 13px;
+            color: var(--secondary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "header"
+                    "main"
+                    "sidebar"
+                    "footer";
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .week-schedule {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .step-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .step-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Encabezado con logo -->
+        <header class="header">
+            <div class="logo-container">
+                <div class="logo">
+                    <div class="logo-circle">
+                        <span class="logo-text">LP</span>
+                    </div>
+                </div>
+                <div class="company-info">
+                    <h1>LATAM Provider S.A.C.</h1>
+                    <p>Sistema de Gestión de Horarios</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="themeToggle" class="btn-theme">
+                    <span id="themeIcon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Proceso paso a paso -->
+        <main class="main-content">
+            <!-- Paso 1: Información del trabajador -->
+            <section id="step1" class="step active">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <h2>Información del Trabajador</h2>
+                </div>
+                <div class="step-content">
+                    <div class="form-group">
+                        <label for="nombre">📝 Nombre Completo</label>
+                        <input type="text" id="nombre" placeholder="Ingrese su nombre completo" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="area">🏢 Área</label>
+                            <select id="area" required>
+                                <option value="">Seleccione un área</option>
+                                <option value="Operaciones">Operaciones</option>
+                                <option value="Ventas">Ventas</option>
+                                <option value="Soporte">Soporte</option>
+                                <option value="Administración">Administración</option>
+                                <option value="Logística">Logística</option>
+                                <option value="TI">TI</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cargo">💼 Cargo</label>
+                            <select id="cargo" required>
+                                <option value="">Seleccione un cargo</option>
+                                <option value="Supervisor">Supervisor</option>
+                                <option value="Analista">Analista</option>
+                                <option value="Asistente">Asistente</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Especialista">Especialista</option>
+                                <option value="Gerente">Gerente</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>ℹ️ Información Importante</label>
+                        <div class="info-box">
+                            <p><strong>Tolerancia de entrada:</strong> 10 minutos</p>
+                            <p>Seleccione su área y cargo para continuar con la asignación de horarios.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="step-actions">
+                        <button id="nextStep1" class="btn-primary">Siguiente →</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Paso 2: Selección de horarios -->
+            <section id="step2" class="step">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <h2>Selección de Horarios Semanal</h2>
+                </div>
+                <div class="step-content">
+                    <div class="info-box warning">
+                        ⚠️ Horarios disponibles según tabla de referencia. Recuerda que los horarios de refrigerio se deducen automáticamente del total.
+                    </div>
+                    
+                    <!-- Selector de horarios por día -->
+                    <div class="week-schedule">
+                        <!-- Días de la semana generados dinámicamente -->
+                    </div>
+                    
+                    <div class="selected-summary">
+                        <h3>📋 Resumen de Horarios Seleccionados</h3>
+                        <div id="summaryContent" class="summary-content">
+                            <!-- Resumen generado dinámicamente -->
+                        </div>
+                    </div>
+                    
+                    <div class="step-actions">
+                        <button id="prevStep2" class="btn-secondary">← Anterior</button>
+                        <button id="nextStep2" class="btn-primary">Siguiente →</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Paso 3: Confirmación y generación -->
+            <section id="step3" class="step">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <h2>Confirmación y Generación de Reporte</h2>
+                </div>
+                <div class="step-content">
+                    <div class="confirmation-card">
+                        <div class="confirmation-header">
+                            <h3>✅ Confirmación de Datos</h3>
+                        </div>
+                        <div class="confirmation-body">
+                            <div id="finalSummary">
+                                <!-- Resumen final generado dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="step-actions">
+                        <button id="prevStep3" class="btn-secondary">← Anterior</button>
+                        <button id="generatePdf" class="btn-success">
+                            📄 Generar Reporte PDF
+                        </button>
+                        <button id="resetAll" class="btn-danger">
+                            🔄 Reiniciar
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Tabla de referencia de horarios -->
+        <aside class="sidebar">
+            <div class="sidebar-card">
+                <h3>📊 Tabla de Horarios de Referencia</h3>
+                <div class="table-container">
+                    <table class="reference-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Horario</th>
+                                <th>Refrigerio</th>
+                                <th>Horas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Datos generados dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="legend">
+                    <p><span class="legend-color legend-day"></span> Horario diurno</p>
+                    <p><span class="legend-color legend-evening"></span> Horario vespertino</p>
+                    <p><span class="legend-color legend-night"></span> Horario nocturno</p>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2023 LATAM Provider S.A.C. - Sistema de Gestión de Horarios</p>
+            <p class="footer-info">Todos los derechos reservados</p>
+        </footer>
+    </div>
+    
+    <!-- Modal para selección de horario -->
+    <div id="scheduleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Seleccionar Horario</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalDayInfo"></div>
+                <div class="schedule-options" id="scheduleOptions">
+                    <!-- Opciones generadas dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelSchedule" class="btn-secondary">Cancelar</button>
+                <button id="confirmSchedule" class="btn-primary">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos de horarios de referencia
+        const horarios = [
+            { codigo: "HOR-01", entrada: "8:00", entrada_refrigerio: "13:00", salida_refrigerio: "14:00", horas_refrigerio: "1:00", salida: "17:00", horario: "08:00 - 17:00", horas_trabajo: "8:00", tipo: "diurno" },
+            { codigo: "HOR-02", entrada: "14:00", entrada_refrigerio: "18:00", salida_refrigerio: "18:30", horas_refrigerio: "0:30", salida: "22:30", horario: "14:00 - 22:30", horas_trabajo: "8:00", tipo: "vespertino" },
+            { codigo: "HOR-03", entrada: "6:00", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "14:00", horario: "06:00 - 14:00", horas_trabajo: "8:00", tipo: "diurno" },
+            { codigo: "HOR-04", entrada: "14:00", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "22:00", horario: "14:00 - 22:00", horas_trabajo: "8:00", tipo: "vespertino" },
+            { codigo: "HOR-05", entrada: "22:00", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "6:00", horario: "22:00 - 06:00", horas_trabajo: "8:00", tipo: "nocturno" },
+            { codigo: "HOR-06", entrada: "7:00", entrada_refrigerio: "12:00", salida_refrigerio: "13:00", horas_refrigerio: "1:00", salida: "16:00", horario: "07:00 - 16:00", horas_trabajo: "8:00", tipo: "diurno" },
+            { codigo: "HOR-07", entrada: "6:00", entrada_refrigerio: "12:00", salida_refrigerio: "13:00", horas_refrigerio: "1:00", salida: "15:00", horario: "06:00 - 15:00", horas_trabajo: "8:00", tipo: "diurno" },
+            { codigo: "HOR-08", entrada: "", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "", horario: "00:00 - 00:00", horas_trabajo: "0:00", tipo: "libre" },
+            { codigo: "HOR-09", entrada: "", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "", horario: "00:00 - 00:00", horas_trabajo: "0:00", tipo: "libre" }
+        ];
+
+        // Variables globales
+        let currentStep = 1;
+        let selectedDay = null;
+        let weeklySchedule = {
+            lunes: null,
+            martes: null,
+            miercoles: null,
+            jueves: null,
+            viernes: null
+        };
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar tabla de referencia
+            initReferenceTable();
+            
+            // Inicializar semana
+            initWeekSchedule();
+            
+            // Configurar event listeners
+            setupEventListeners();
+            
+            // Inicializar tema
+            initTheme();
+        });
+
+        // Inicializar tabla de referencia
+        function initReferenceTable() {
+            const tableBody = document.querySelector('.reference-table tbody');
+            tableBody.innerHTML = '';
+            
+            horarios.forEach(horario => {
+                const row = document.createElement('tr');
+                
+                // Aplicar clase según tipo de horario
+                if (horario.tipo === 'diurno') row.className = 'row-day';
+                else if (horario.tipo === 'vespertino') row.className = 'row-evening';
+                else if (horario.tipo === 'nocturno') row.className = 'row-night';
+                
+                row.innerHTML = `
+                    <td><span class="schedule-code">${horario.codigo}</span></td>
+                    <td>${horario.horario}</td>
+                    <td>${horario.horas_refrigerio !== "0:00" ? horario.horas_refrigerio : "Sin refrigerio"}</td>
+                    <td>${horario.horas_trabajo}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Inicializar semana
+        function initWeekSchedule() {
+            const weekContainer = document.querySelector('.week-schedule');
+            const days = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
+            const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            
+            weekContainer.innerHTML = '';
+            
+            // Obtener fecha actual
+            const today = new Date();
+            const currentDay = today.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+            
+            // Calcular la fecha del próximo lunes
+            const daysToMonday = currentDay === 0 ? 1 : currentDay === 1 ? 0 : 8 - currentDay;
+            const nextMonday = new Date(today);
+            nextMonday.setDate(today.getDate() + daysToMonday);
+            
+            days.forEach((day, index) => {
+                const dayDate = new Date(nextMonday);
+                dayDate.setDate(nextMonday.getDate() + index);
+                
+                const formattedDate = formatDate(dayDate);
+                const schedule = weeklySchedule[day];
+                
+                const dayCard = document.createElement('div');
+                dayCard.className = `day-card ${schedule ? 'selected' : ''}`;
+                dayCard.dataset.day = day;
+                
+                dayCard.innerHTML = `
+                    <div class="day-name">${dayNames[index]}</div>
+                    <div class="day-date">${formattedDate}</div>
+                    <div class="day-schedule">
+                        ${schedule ? 
+                            `<strong>${schedule.horario}</strong><br>
+                             <small>${schedule.horas_refrigerio !== "0:00" ? `Refrigerio: ${schedule.horas_refrigerio}` : 'Sin refrigerio'}</small>` 
+                            : '<span class="no-schedule">No asignado</span>'}
+                    </div>
+                `;
+                
+                dayCard.addEventListener('click', () => openScheduleModal(day, dayNames[index], formattedDate));
+                weekContainer.appendChild(dayCard);
+            });
+            
+            updateSummary();
+        }
+
+        // Formatear fecha
+        function formatDate(date) {
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+            return date.toLocaleDateString('es-ES', options);
+        }
+
+        // Abrir modal para seleccionar horario
+        function openScheduleModal(day, dayName, date) {
+            selectedDay = day;
+            
+            const modal = document.getElementById('scheduleModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDayInfo = document.getElementById('modalDayInfo');
+            const scheduleOptions = document.getElementById('scheduleOptions');
+            
+            modalTitle.textContent = `Seleccionar Horario para ${dayName}`;
+            modalDayInfo.innerHTML = `<p><strong>Fecha:</strong> ${date}</p>`;
+            
+            // Generar opciones de horario
+            scheduleOptions.innerHTML = '';
+            
+            horarios.forEach(horario => {
+                const option = document.createElement('div');
+                option.className = `schedule-option ${weeklySchedule[day]?.codigo === horario.codigo ? 'selected' : ''}`;
+                option.dataset.codigo = horario.codigo;
+                
+                let tipoColor = '';
+                if (horario.tipo === 'diurno') tipoColor = '#bee3f8';
+                else if (horario.tipo === 'vespertino') tipoColor = '#fbd38d';
+                else if (horario.tipo === 'nocturno') tipoColor = '#b794f4';
+                
+                option.innerHTML = `
+                    <div class="schedule-code">${horario.codigo}</div>
+                    <div class="schedule-time">${horario.horario}</div>
+                    <div class="schedule-break">
+                        ${horario.horas_refrigerio !== "0:00" ? `Refrigerio: ${horario.horas_refrigerio}` : 'Sin refrigerio'}
+                    </div>
+                    <div class="schedule-hours">Horas totales: ${horario.horas_trabajo}</div>
+                `;
+                
+                option.style.borderLeft = `4px solid ${tipoColor}`;
+                option.addEventListener('click', () => selectScheduleOption(option, horario));
+                scheduleOptions.appendChild(option);
+            });
+            
+            modal.classList.add('active');
+        }
+
+        // Seleccionar opción de horario en el modal
+        function selectScheduleOption(optionElement, horario) {
+            // Deseleccionar todas las opciones
+            document.querySelectorAll('.schedule-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Seleccionar la opción clickeada
+            optionElement.classList.add('selected');
+            
+            // Configurar botón de confirmar
+            const confirmBtn = document.getElementById('confirmSchedule');
+            confirmBtn.onclick = () => confirmScheduleSelection(horario);
+        }
+
+        // Confirmar selección de horario
+        function confirmScheduleSelection(horario) {
+            if (selectedDay && horario) {
+                weeklySchedule[selectedDay] = horario;
+                initWeekSchedule();
+                closeModal();
+            }
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            const modal = document.getElementById('scheduleModal');
+            modal.classList.remove('active');
+            selectedDay = null;
+        }
+
+        // Actualizar resumen
+        function updateSummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            let summaryHTML = '';
+            let totalHours = 0;
+            
+            Object.entries(weeklySchedule).forEach(([day, schedule]) => {
+                if (schedule) {
+                    const dayNames = {
+                        lunes: 'Lunes',
+                        martes: 'Martes',
+                        miercoles: 'Miércoles',
+                        jueves: 'Jueves',
+                        viernes: 'Viernes'
+                    };
+                    
+                    // Calcular horas trabajadas
+                    const hours = parseFloat(schedule.horas_trabajo);
+                    totalHours += hours;
+                    
+                    summaryHTML += `
+                        <div class="summary-item">
+                            <strong>${dayNames[day]}</strong>
+                            <div>${schedule.horario}</div>
+                            <small>${schedule.horas_refrigerio !== "0:00" ? `Refrigerio: ${schedule.horas_refrigerio}` : 'Sin refrigerio'}</small>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (summaryHTML === '') {
+                summaryHTML = '<p style="grid-column: 1/-1; text-align: center; color: #718096;">No hay horarios asignados aún.</p>';
+            } else {
+                summaryHTML += `
+                    <div class="summary-item" style="grid-column: 1/-1; background-color: #e6fffa; font-weight: bold;">
+                        <div>Total de horas semanales:</div>
+                        <div>${totalHours} horas</div>
+                    </div>
+                `;
+            }
+            
+            summaryContent.innerHTML = summaryHTML;
+            
+            // Actualizar también el resumen final
+            updateFinalSummary();
+        }
+
+        // Actualizar resumen final para confirmación
+        function updateFinalSummary() {
+            const nombre = document.getElementById('nombre').value;
+            const area = document.getElementById('area').value;
+            const cargo = document.getElementById('cargo').value;
+            
+            const finalSummary = document.getElementById('finalSummary');
+            let summaryHTML = '';
+            
+            if (nombre || area || cargo) {
+                summaryHTML += `
+                    <div class="final-summary-item">
+                        <div><strong>Nombre:</strong></div>
+                        <div>${nombre || 'No especificado'}</div>
+                    </div>
+                    <div class="final-summary-item">
+                        <div><strong>Área:</strong></div>
+                        <div>${area || 'No especificado'}</div>
+                    </div>
+                    <div class="final-summary-item">
+                        <div><strong>Cargo:</strong></div>
+                        <div>${cargo || 'No especificado'}</div>
+                    </div>
+                    <div class="final-summary-item" style="border-bottom: 2px solid var(--primary-color);">
+                        <div><strong>Fecha de generación:</strong></div>
+                        <div>${new Date().toLocaleDateString('es-ES', { 
+                            day: '2-digit', 
+                            month: 'long', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</div>
+                    </div>
+                `;
+            }
+            
+            // Agregar horarios semanales
+            summaryHTML += `<h3 style="margin-top: 20px; margin-bottom: 15px;">Horario Semanal:</h3>`;
+            
+            let hasSchedule = false;
+            let totalHours = 0;
+            
+            Object.entries(weeklySchedule).forEach(([day, schedule]) => {
+                if (schedule) {
+                    hasSchedule = true;
+                    const dayNames = {
+                        lunes: 'Lunes',
+                        martes: 'Martes',
+                        miercoles: 'Miércoles',
+                        jueves: 'Jueves',
+                        viernes: 'Viernes'
+                    };
+                    
+                    const hours = parseFloat(schedule.horas_trabajo);
+                    totalHours += hours;
+                    
+                    summaryHTML += `
+                        <div class="final-summary-item">
+                            <div><strong>${dayNames[day]}:</strong></div>
+                            <div>
+                                ${schedule.horario}
+                                ${schedule.horas_refrigerio !== "0:00" ? ` (Refrigerio: ${schedule.horas_refrigerio})` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (!hasSchedule) {
+                summaryHTML += `<p style="text-align: center; color: #718096; padding: 20px;">No hay horarios asignados.</p>`;
+            } else {
+                summaryHTML += `
+                    <div class="final-summary-item" style="background-color: #e6fffa; font-weight: bold; border-radius: var(--border-radius);">
+                        <div><strong>Total de horas semanales:</strong></div>
+                        <div>${totalHours} horas</div>
+                    </div>
+                `;
+            }
+            
+            finalSummary.innerHTML = summaryHTML;
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Navegación entre pasos
+            document.getElementById('nextStep1').addEventListener('click', () => {
+                const nombre = document.getElementById('nombre').value;
+                const area = document.getElementById('area').value;
+                const cargo = document.getElementById('cargo').value;
+                
+                if (!nombre || !area || !cargo) {
+                    alert('Por favor complete todos los campos antes de continuar.');
+                    return;
+                }
+                
+                goToStep(2);
+            });
+            
+            document.getElementById('prevStep2').addEventListener('click', () => goToStep(1));
+            document.getElementById('nextStep2').addEventListener('click', () => goToStep(3));
+            document.getElementById('prevStep3').addEventListener('click', () => goToStep(2));
+            
+            // Cerrar modal
+            document.querySelector('.modal-close').addEventListener('click', closeModal);
+            document.getElementById('cancelSchedule').addEventListener('click', closeModal);
+            
+            // Generar PDF
+            document.getElementById('generatePdf').addEventListener('click', generatePdf);
+            
+            // Reiniciar
+            document.getElementById('resetAll').addEventListener('click', resetAll);
+            
+            // Cambiar tema
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        }
+
+        // Navegar entre pasos
+        function goToStep(step) {
+            // Ocultar paso actual
+            document.querySelector(`#step${currentStep}`).classList.remove('active');
+            
+            // Mostrar nuevo paso
+            document.querySelector(`#step${step}`).classList.add('active');
+            
+            // Actualizar paso actual
+            currentStep = step;
+            
+            // Actualizar resumen si vamos al paso 3
+            if (step === 3) {
+                updateFinalSummary();
+            }
+        }
+
+        // Inicializar tema
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        // Cambiar tema
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        // Actualizar ícono del tema
+        function updateThemeIcon(theme) {
+            const themeIcon = document.getElementById('themeIcon');
+            themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Generar PDF
+        function generatePdf() {
+            const nombre = document.getElementById('nombre').value;
+            const area = document.getElementById('area').value;
+            const cargo = document.getElementById('cargo').value;
+            
+            if (!nombre || !area || !cargo) {
+                alert('Por favor complete la información del trabajador antes de generar el PDF.');
+                goToStep(1);
+                return;
+            }
+            
+            // Usar jsPDF para generar el PDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Título y logo
+            doc.setFontSize(20);
+            doc.setTextColor(26, 54, 93); // Color primario
+            doc.text('LATAM Provider S.A.C.', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(16);
+            doc.text('Reporte de Horario Semanal', 105, 30, { align: 'center' });
+            
+            // Línea separadora
+            doc.setDrawColor(49, 130, 206); // Color de acento
+            doc.setLineWidth(0.5);
+            doc.line(20, 35, 190, 35);
+            
+            // Información del trabajador
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Nombre: ${nombre}`, 20, 45);
+            doc.text(`Área: ${area}`, 20, 55);
+            doc.text(`Cargo: ${cargo}`, 20, 65);
+            doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 20, 75);
+            
+            // Tabla de horarios
+            doc.setFontSize(14);
+            doc.setTextColor(26, 54, 93);
+            doc.text('Horario Semanal', 20, 90);
+            
+            // Encabezado de tabla
+            doc.setFillColor(49, 130, 206);
+            doc.rect(20, 95, 170, 10, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(11);
+            doc.text('Día', 25, 102);
+            doc.text('Horario', 80, 102);
+            doc.text('Refrigerio', 130, 102);
+            doc.text('Horas', 170, 102);
+            
+            // Filas de la tabla
+            let yPos = 110;
+            const dayNames = {
+                lunes: 'Lunes',
+                martes: 'Martes',
+                miercoles: 'Miércoles',
+                jueves: 'Jueves',
+                viernes: 'Viernes'
+            };
+            
+            let totalHours = 0;
+            Object.entries(weeklySchedule).forEach(([day, schedule]) => {
+                if (schedule) {
+                    doc.setFillColor(240, 249, 255);
+                    doc.rect(20, yPos - 5, 170, 10, 'F');
+                    
+                    doc.setTextColor(0, 0, 0);
+                    doc.text(dayNames[day], 25, yPos);
+                    doc.text(schedule.horario, 80, yPos);
+                    doc.text(schedule.horas_refrigerio !== "0:00" ? schedule.horas_refrigerio : "Sin refrigerio", 130, yPos);
+                    doc.text(schedule.horas_trabajo, 170, yPos);
+                    
+                    const hours = parseFloat(schedule.horas_trabajo);
+                    totalHours += hours;
+                    
+                    yPos += 10;
+                }
+            });
+            
+            // Total de horas
+            yPos += 5;
+            doc.setFillColor(230, 255, 250);
+            doc.rect(20, yPos - 5, 170, 10, 'F');
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Total de horas semanales:', 25, yPos);
+            doc.text(`${totalHours} horas`, 170, yPos, { align: 'right' });
+            
+            // Pie de página
+            yPos += 20;
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text('© 2023 LATAM Provider S.A.C. - Sistema de Gestión de Horarios', 105, yPos, { align: 'center' });
+            doc.text('Este documento ha sido generado automáticamente por el sistema.', 105, yPos + 5, { align: 'center' });
+            
+            // Guardar PDF
+            doc.save(`Horario_${nombre.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+            
+            // Mostrar mensaje de éxito
+            alert('¡PDF generado con éxito! Se ha descargado automáticamente.');
+        }
+
+        // Reiniciar todo
+        function resetAll() {
+            if (confirm('¿Está seguro de que desea reiniciar? Se perderán todos los datos ingresados.')) {
+                // Reiniciar formulario
+                document.getElementById('nombre').value = '';
+                document.getElementById('area').value = '';
+                document.getElementById('cargo').value = '';
+                
+                // Reiniciar horarios
+                weeklySchedule = {
+                    lunes: null,
+                    martes: null,
+                    miercoles: null,
+                    jueves: null,
+                    viernes: null
+                };
+                
+                // Volver al paso 1
+                goToStep(1);
+                
+                // Actualizar semana
+                initWeekSchedule();
+                
+                alert('Sistema reiniciado correctamente.');
+            }
+        }
+    </script>
+</body>
+</html>
