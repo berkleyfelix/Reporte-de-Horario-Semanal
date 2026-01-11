@@ -650,12 +650,13 @@
                             <label for="area">🏢 Área</label>
                             <select id="area" required>
                                 <option value="">Seleccione un área</option>
-                                <option value="Operaciones">Operaciones</option>
-                                <option value="Ventas">Ventas</option>
-                                <option value="Soporte">Soporte</option>
-                                <option value="Administración">Administración</option>
-                                <option value="Logística">Logística</option>
-                                <option value="TI">TI</option>
+                                <option value="Departamento Comercial">Departamento Comercial</option>
+                                <option value="Departamento de Administración y Gestión">Departamento de Administración y Gestión</option>
+                                <option value="Departamento de Contabilidad">Departamento de Contabilidad</option>
+                                <option value="Departamento de Logística y Distribución">Departamento de Logística y Distribución</option>
+                                <option value="Departamento de Marketing">Departamento de Marketing</option>
+                                <option value="Departamento de Recursos Humanos">Departamento de Recursos Humanos</option>
+                                <option value="Departamento de Tecnología e Innovación">Departamento de Tecnología e Innovación</option>
                             </select>
                         </div>
                         
@@ -663,7 +664,10 @@
                             <label for="cargo">💼 Cargo</label>
                             <select id="cargo" required>
                                 <option value="">Seleccione un cargo</option>
-                                <option value="Supervisor">Supervisor</option>
+                                <option value="Director de Marketing">Director de Marketing</option>
+                                <option value="Content Creator & Community Manager">Content Creator & Community Manager</option>
+                                <option value="Diseñador y Editor de Video">Diseñador y Editor de Video</option>
+                                <option value="Practicante">Practicante</option>
                                 <option value="Analista">Analista</option>
                                 <option value="Asistente">Asistente</option>
                                 <option value="Técnico">Técnico</option>
@@ -777,7 +781,7 @@
         
         <!-- Footer -->
         <footer class="footer">
-            <p>© 2023 LATAM Provider S.A.C. - Sistema de Gestión de Horarios</p>
+            <p>© 2026 LATAM Provider S.A.C. - Sistema de Gestión de Horarios</p>
             <p class="footer-info">Todos los derechos reservados</p>
         </footer>
     </div>
@@ -812,8 +816,8 @@
             { codigo: "HOR-05", entrada: "22:00", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "6:00", horario: "22:00 - 06:00", horas_trabajo: "8:00", tipo: "nocturno" },
             { codigo: "HOR-06", entrada: "7:00", entrada_refrigerio: "12:00", salida_refrigerio: "13:00", horas_refrigerio: "1:00", salida: "16:00", horario: "07:00 - 16:00", horas_trabajo: "8:00", tipo: "diurno" },
             { codigo: "HOR-07", entrada: "6:00", entrada_refrigerio: "12:00", salida_refrigerio: "13:00", horas_refrigerio: "1:00", salida: "15:00", horario: "06:00 - 15:00", horas_trabajo: "8:00", tipo: "diurno" },
-            { codigo: "HOR-08", entrada: "", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "", horario: "00:00 - 00:00", horas_trabajo: "0:00", tipo: "libre" },
-            { codigo: "HOR-09", entrada: "", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "0:00", salida: "", horario: "00:00 - 00:00", horas_trabajo: "0:00", tipo: "libre" }
+            { codigo: "HOR-08", entrada: "", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "1:00", salida: "", horario: "2:00 - 6:00", horas_trabajo: "6:00", tipo: "libre" },
+            { codigo: "HOR-09", entrada: "", entrada_refrigerio: "", salida_refrigerio: "", horas_refrigerio: "1:00", salida: "", horario: "8:00 - 1:00", horas_trabajo: "6:00", tipo: "libre" }
         ];
 
         // Variables globales
@@ -1288,7 +1292,7 @@
             yPos += 20;
             doc.setFontSize(10);
             doc.setTextColor(100, 100, 100);
-            doc.text('© 2023 LATAM Provider S.A.C. - Sistema de Gestión de Horarios', 105, yPos, { align: 'center' });
+            doc.text('© 2026 LATAM Provider S.A.C. - Sistema de Gestión de Horarios', 105, yPos, { align: 'center' });
             doc.text('Este documento ha sido generado automáticamente por el sistema.', 105, yPos + 5, { align: 'center' });
             
             // Guardar PDF
